@@ -1,0 +1,5 @@
+../Core/Src/main.c:16:5:main	1
+../Core/Src/main.c:32:6:Error_Handler	1
+../Core/Src/main.c:40:6:i2c_init	1
+../Core/Src/main.c:67:6:opt3001_init	1
+../Core/Src/main.c:79:7:opt3001_read_lux	1

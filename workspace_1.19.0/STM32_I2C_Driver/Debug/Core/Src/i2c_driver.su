@@ -1,0 +1,4 @@
+../Core/Src/i2c_driver.c:5:6:I2C1_Init	4	static
+../Core/Src/i2c_driver.c:28:13:I2C_Start	16	static
+../Core/Src/i2c_driver.c:38:6:I2C1_ReadMulti	24	static
+../Core/Src/i2c_driver.c:67:7:OPT3001_ReadLux	24	static

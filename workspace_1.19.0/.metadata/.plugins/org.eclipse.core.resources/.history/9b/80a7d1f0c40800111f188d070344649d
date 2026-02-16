@@ -1,0 +1,124 @@
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "stm32l476xx.h"
+#include <stdio.h>
+
+void UART2_Init(void);
+void UART_SendString(char *str);
+
+void TaskA(void *pvParameters);
+void TaskB(void *pvParameters);
+void TaskC(void *pvParameters);
+
+/* Counting Semaphore */
+SemaphoreHandle_t sensorSem;
+SemaphoreHandle_t uartmutex;
+
+int main(void)
+{
+    UART2_Init();
+
+    /* Create counting semaphore
+       Max count = 3 (two sensors available)
+       Initial count = 2
+    */
+    sensorSem = xSemaphoreCreateCounting(3, 3);
+    uartmutex = xSemaphoreCreateMutex();
+    if(sensorSem == NULL)
+    {
+        while(1);  // Semaphore creation failed
+    }
+
+    /* Create three tasks */
+    xTaskCreate(TaskA, "TaskA", 256, NULL, 1, NULL);
+    xTaskCreate(TaskB, "TaskB", 256, NULL, 1, NULL);
+    xTaskCreate(TaskC, "TaskC", 256, NULL, 1, NULL);
+
+    vTaskStartScheduler();
+
+    while(1);
+}
+
+void TaskA(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(sensorSem, portMAX_DELAY);
+        xSemaphoreTake(uartmutex, portMAX_DELAY);
+        UART_SendString("Task A using Sensor\r\n");
+        xSemaphoreGive(uartmutex);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+
+        xSemaphoreGive(sensorSem);
+        xSemaphoreTake(uartmutex, portMAX_DELAY);
+        UART_SendString("Task A released Sensor\r\n");
+        xSemaphoreGive(uartmutex);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+void TaskB(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(sensorSem, portMAX_DELAY);
+        xSemaphoreTake(uartmutex, portMAX_DELAY);
+        UART_SendString("Task B using Sensor\r\n");
+        xSemaphoreGive(uartmutex);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        xSemaphoreGive(sensorSem);
+        xSemaphoreTake(uartmutex, portMAX_DELAY);
+        UART_SendString("Task B released Sensor\r\n");
+        xSemaphoreGive(uartmutex);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+void TaskC(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(sensorSem, portMAX_DELAY);
+        xSemaphoreTake(uartmutex, portMAX_DELAY);
+        UART_SendString("Task C using Sensor\r\n");
+        xSemaphoreGive(uartmutex);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+
+        xSemaphoreGive(sensorSem);
+        xSemaphoreTake(uartmutex, portMAX_DELAY);
+        UART_SendString("Task C released Sensor\r\n");
+        xSemaphoreGive(uartmutex);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+/* ======================= UART INIT ======================= */
+void UART2_Init(void)
+{
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+    RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+
+    /* PA2 -> TX */
+    GPIOA->MODER &= ~(3 << (2*2));
+    GPIOA->MODER |=  (2 << (2*2));   // Alternate function mode
+
+    GPIOA->AFR[0] |= (7 << (4*2));   // AF7 for USART2
+
+    USART2->BRR = 4000000 / 115200;  // 4 MHz clock
+    USART2->CR1 |= USART_CR1_TE;
+    USART2->CR1 |= USART_CR1_UE;
+}
+
+/* ======================= UART SEND ======================= */
+void UART_SendString(char *str)
+{
+    while(*str)
+    {
+        while(!(USART2->ISR & USART_ISR_TXE));
+        USART2->TDR = *str++;
+    }
+}

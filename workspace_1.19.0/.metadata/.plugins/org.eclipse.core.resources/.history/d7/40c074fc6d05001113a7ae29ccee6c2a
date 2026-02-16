@@ -1,0 +1,47 @@
+#include "spi.h"
+
+void SPI1_Init(void)
+{
+    /* 1. Enable Clocks */
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;   // GPIOA clock
+    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;    // SPI1 clock
+
+    /* 2. Set PA5, PA6, PA7 to Alternate Function */
+    GPIOA->MODER &= ~( (3<<(2*5)) | (3<<(2*6)) | (3<<(2*7)) );
+    GPIOA->MODER |=  ( (2<<(2*5)) | (2<<(2*6)) | (2<<(2*7)) );
+
+    /* 3. Select AF5 (SPI1) */
+    GPIOA->AFR[0] &= ~( (0xF<<(4*5)) | (0xF<<(4*6)) | (0xF<<(4*7)) );
+    GPIOA->AFR[0] |=  ( (5<<(4*5)) | (5<<(4*6)) | (5<<(4*7)) );
+
+    /* 4. SPI Configuration */
+
+    SPI1->CR1 = 0;
+    SPI1->CR1 |= SPI_CR1_MSTR;     // Master mode
+    SPI1->CR1 |= SPI_CR1_SSM;      // Software slave management
+    SPI1->CR1 |= SPI_CR1_SSI;      // Internal NSS high
+    SPI1->CR1 |= (3 << SPI_CR1_BR_Pos);  // Baud rate = fPCLK/16
+
+    SPI1->CR2 = 0;
+    SPI1->CR2 |= SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0; // 8-bit data
+    SPI1->CR2 |= SPI_CR2_FRXTH;   // 8-bit RX threshold
+
+    /* 5. Enable SPI */
+    SPI1->CR1 |= SPI_CR1_SPE;
+}
+
+
+uint8_t SPI1_Transfer(uint8_t data)
+{
+    /* Wait until TX empty */
+    while(!(SPI1->SR & SPI_SR_TXE));
+
+    /* Send data */
+    *((__IO uint8_t*)&SPI1->DR) = data;
+
+    /* Wait until RX not empty */
+    while(!(SPI1->SR & SPI_SR_RXNE));
+
+    /* Return received data */
+    return *((__IO uint8_t*)&SPI1->DR);
+}

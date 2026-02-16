@@ -1,0 +1,104 @@
+#include "stm32l476xx.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include <stdio.h>
+#include <string.h>
+
+/* Queue Handle */
+QueueHandle_t myQueue;
+
+/* Function Prototypes */
+void UART2_Init(void);
+void UART_SendString(char *str);
+
+void SenderTask(void *pvParameters);
+void ReceiverTask(void *pvParameters);
+static void SysTick_Handler(void);
+
+
+int main(void)
+{
+    UART2_Init();
+
+    /* Create Queue
+       Length = 5
+       Item size = uint32_t
+    */
+    myQueue = xQueueCreate(5, sizeof(uint32_t));
+
+    if(myQueue == NULL)
+    {
+        while(1); // Queue creation failed
+    }
+
+    /* Create Tasks */
+    xTaskCreate(SenderTask, "Sender", 512, NULL, 1, NULL);
+    xTaskCreate(ReceiverTask, "Receiver", 512, NULL, 1, NULL);
+
+    /* Start Scheduler */
+    vTaskStartScheduler();
+
+    while(1);
+}
+
+void SenderTask(void *pvParameters)
+{
+    uint8_t counter = 0;
+
+    while(1)
+    {
+        counter++;
+
+        /* Send to Queue */
+        xQueueSend(myQueue, &counter, portMAX_DELAY);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+void ReceiverTask(void *pvParameters)
+{
+    uint8_t receivedValue;
+    char msg[50];
+
+    while(1)
+    {
+        if(xQueueReceive(myQueue, &receivedValue, portMAX_DELAY) == pdTRUE)
+        {
+            sprintf(msg, "Received: %lu\r\n", receivedValue);
+            UART_SendString(msg);
+        }
+    }
+}
+
+void UART2_Init(void)
+{
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+    RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+
+    /* PA2 -> Alternate Function */
+    GPIOA->MODER &= ~(3 << (2*2));
+    GPIOA->MODER |=  (2 << (2*2));
+
+    GPIOA->AFR[0] |= (7 << (4*2)); // AF7 USART2
+
+    USART2->BRR = 4000000 / 115200; // 4 MHz clock
+    USART2->CR1 |= USART_CR1_TE;
+    USART2->CR1 |= USART_CR1_UE;
+}
+
+void UART_SendString(char *str)
+{
+    while(*str)
+    {
+        while(!(USART2->ISR & USART_ISR_TXE));
+        USART2->TDR = *str++;
+    }
+}
+static void SysTick_Handler(void)
+{
+    xPortSysTickHandler();
+}
+
+

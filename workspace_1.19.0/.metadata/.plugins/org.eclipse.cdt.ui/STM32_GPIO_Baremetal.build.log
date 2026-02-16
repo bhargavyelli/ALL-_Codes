@@ -1,0 +1,10 @@
+10:16:13 **** Incremental Build of configuration Debug for project STM32_GPIO_Baremetal ****
+make -j4 all 
+arm-none-eabi-size  STM32_GPIO_Baremetal.elf 
+   text	   data	    bss	    dec	    hex	filename
+   1168	      4	   1572	   2744	    ab8	STM32_GPIO_Baremetal.elf
+Finished building: default.size.stdout
+ 
+
+10:16:13 Build Finished. 0 errors, 0 warnings. (took 78ms)
+

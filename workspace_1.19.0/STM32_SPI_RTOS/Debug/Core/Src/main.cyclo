@@ -1,0 +1,4 @@
+../Core/Src/main.c:13:5:main	1
+../Core/Src/main.c:21:6:spi_init	1
+../Core/Src/main.c:46:6:Transfer	2
+../Core/Src/main.c:61:9:SPI1_Transfer	3

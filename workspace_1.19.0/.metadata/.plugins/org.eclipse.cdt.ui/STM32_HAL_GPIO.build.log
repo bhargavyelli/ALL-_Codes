@@ -1,0 +1,10 @@
+11:17:16 **** Incremental Build of configuration Debug for project STM32_HAL_GPIO ****
+make -j4 all 
+arm-none-eabi-size  STM32_HAL_GPIO.elf 
+   text	   data	    bss	    dec	    hex	filename
+   2700	     12	   1572	   4284	   10bc	STM32_HAL_GPIO.elf
+Finished building: default.size.stdout
+ 
+
+11:17:16 Build Finished. 0 errors, 0 warnings. (took 79ms)
+

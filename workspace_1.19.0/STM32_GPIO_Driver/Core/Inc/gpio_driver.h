@@ -1,0 +1,65 @@
+#ifndef GPIO_DRIVER_H
+#define GPIO_DRIVER_H
+
+#include <stdint.h>
+
+
+typedef struct
+{
+    volatile uint32_t MODER;    // Mode register
+    volatile uint32_t OTYPER;   // Output type
+    volatile uint32_t OSPEEDR;  // Speed
+    volatile uint32_t PUPDR;    // Pull-up/Pull-down
+    volatile uint32_t IDR;      // Input data
+    volatile uint32_t ODR;      // Output data
+    volatile uint32_t BSRR;     // Bit set/reset
+    volatile uint32_t LCKR;
+    volatile uint32_t AFR[2];
+} GPIO_RegDef_t;
+
+/* Base Addresses (STM32L4) */
+#define GPIOA   ((GPIO_RegDef_t*)0x48000000)
+#define GPIOB   ((GPIO_RegDef_t*)0x48000400)
+#define GPIOC   ((GPIO_RegDef_t*)0x48000800)
+
+/* RCC Register */
+#define RCC_AHB2ENR   (*(volatile uint32_t*)0x4002104C)
+
+/* Clock Enable Macros */
+#define GPIOA_CLK_EN()   (RCC_AHB2ENR |= (1<<0))
+#define GPIOB_CLK_EN()   (RCC_AHB2ENR |= (1<<1))
+#define GPIOC_CLK_EN()   (RCC_AHB2ENR |= (1<<2))
+
+/* GPIO Modes */
+#define GPIO_MODE_INPUT      0
+#define GPIO_MODE_OUTPUT     1
+#define GPIO_MODE_AF         2
+#define GPIO_MODE_ANALOG     3
+
+/* Output Type */
+#define GPIO_OTYPE_PP        0
+#define GPIO_OTYPE_OD        1
+
+/* Pull Config */
+#define GPIO_NO_PUPD         0
+#define GPIO_PULLUP          1
+#define GPIO_PULLDOWN        2
+
+/* Speed */
+#define GPIO_SPEED_LOW       0
+#define GPIO_SPEED_MEDIUM    1
+#define GPIO_SPEED_FAST      2
+#define GPIO_SPEED_HIGH      3
+
+
+void GPIO_Init(GPIO_RegDef_t *GPIOx, uint8_t pin, uint8_t mode,
+               uint8_t otype, uint8_t speed, uint8_t pupd);
+
+void GPIO_WritePin(GPIO_RegDef_t *GPIOx, uint8_t pin, uint8_t value);
+void GPIO_TogglePin(GPIO_RegDef_t *GPIOx, uint8_t pin);
+uint8_t GPIO_ReadPin(GPIO_RegDef_t *GPIOx, uint8_t pin);
+void led_task(void);
+void check_button(void);
+void SysTick_Handler(void);
+
+#endif

@@ -1,0 +1,140 @@
+#include "FreeRTOS.h"
+#include "task.h"
+#include "stm32l476xx.h"
+#include <stdio.h>
+#include "semphr.h"
+
+
+void WelcomeTask(void *pvParameters);
+void ButtonTask(void *pvParameters);
+void UART2_Init(void);
+void UART_SendString(char *str);
+void Button_Init(void);
+void EXTI15_10_IRQHandler(void);
+
+SemaphoreHandle_t uartMutex;
+
+TaskHandle_t welcomeTaskHandle = NULL;
+TaskHandle_t buttonTaskHandle = NULL;
+
+
+int main(void)
+{
+    UART2_Init();
+    Button_Init();
+
+    uartMutex = xSemaphoreCreateMutex();
+
+    xTaskCreate(WelcomeTask,
+                "WelcomeTask",
+                256,
+                NULL,
+                1,
+                &welcomeTaskHandle);
+
+    xTaskCreate(ButtonTask,
+                "ButtonTask",
+                256,
+                NULL,
+                2,
+                &buttonTaskHandle);
+
+    vTaskStartScheduler();
+
+    while(1);
+}
+
+void UART2_Init(void)
+{
+
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+    RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+
+    // PA2 -> TX, PA3 -> RX
+    GPIOA->MODER &= ~(3<<(2*2));
+    GPIOA->MODER |=  (2<<(2*2));
+
+    GPIOA->AFR[0] |= (7<<(4*2));   // AF7 USART2
+
+    USART2->BRR = 4000000/115200;   // Assuming 4 MHz clock
+    USART2->CR1 |= USART_CR1_TE;
+    USART2->CR1 |= USART_CR1_UE;
+}
+
+void UART_SendString(char *str)
+{
+    while(*str)
+    {
+        while(!(USART2->ISR & USART_ISR_TXE));
+        USART2->TDR = *str++;
+    }
+}
+
+void Button_Init(void)
+{
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+
+    GPIOC->MODER &= ~(3<<(2*13));  // Input mode
+
+    SYSCFG->EXTICR[3] |= SYSCFG_EXTICR4_EXTI13_PC;
+
+    EXTI->IMR1 |= EXTI_IMR1_IM13;
+
+    EXTI->RTSR1 |= EXTI_RTSR1_RT13;   // Rising trigger
+
+    NVIC_SetPriority(EXTI15_10_IRQn, 5);
+    NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    if(EXTI->PR1 & EXTI_PR1_PIF13)
+    {
+        EXTI->PR1 |= EXTI_PR1_PIF13;
+
+        xTaskNotifyFromISR(buttonTaskHandle,
+                           0,
+                           eNoAction,
+                           &xHigherPriorityTaskWoken);
+
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+}
+
+void WelcomeTask(void *pvParameters)
+{
+    while(1)
+    {
+        if(xSemaphoreTake(uartMutex, portMAX_DELAY) == pdTRUE)
+        {
+            UART_SendString("Welcome to Bitsilica\r\n");
+            xSemaphoreGive(uartMutex);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}
+
+
+void ButtonTask(void *pvParameters)
+{
+    while(1)
+    {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        if(xSemaphoreTake(uartMutex, portMAX_DELAY) == pdTRUE)
+        {
+            UART_SendString("Interrupt occurred\r\n");
+            xSemaphoreGive(uartMutex);
+        }
+
+        vTaskSuspend(welcomeTaskHandle);
+
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        vTaskResume(welcomeTaskHandle);
+    }
+}

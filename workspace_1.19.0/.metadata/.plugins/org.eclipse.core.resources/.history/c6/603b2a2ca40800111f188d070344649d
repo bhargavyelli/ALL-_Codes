@@ -1,0 +1,105 @@
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "stm32l476xx.h"
+
+void UART2_Init1(void);
+void UART_SendString1(char *str);
+
+void Task1(void *pvParameters);
+void Task2(void *pvParameters);
+
+SemaphoreHandle_t uartMutex;
+
+int main(void)
+{
+    UART2_Init1();
+
+    uartMutex = xSemaphoreCreateMutex();
+
+    xTaskCreate(Task1, "Task1", 256, NULL, 1, NULL);
+    xTaskCreate(Task2, "Task2", 256, NULL, 1, NULL);
+
+    vTaskStartScheduler();
+
+    while(1);
+}
+
+void UART2_Init1(void)
+{
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+    RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+
+    GPIOA->MODER &= ~(3<<(2*2));
+    GPIOA->MODER |=  (2<<(2*2));
+
+    GPIOA->AFR[0] |= (7<<(4*2));
+
+    USART2->BRR = 4000000/115200;
+    USART2->CR1 |= USART_CR1_TE;
+    USART2->CR1 |= USART_CR1_UE;
+}
+
+void UART_SendString1(char *str)
+{
+    while(*str)
+    {
+        while(!(USART2->ISR & USART_ISR_TXE));
+        USART2->TDR = *str++;
+    }
+}
+
+void UART2_Init1(void)
+{
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+    RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+
+    GPIOA->MODER &= ~(3<<(2*2));
+    GPIOA->MODER |=  (2<<(2*2));
+
+    GPIOA->AFR[0] |= (7<<(4*2));
+
+    USART2->BRR = 4000000/115200;
+    USART2->CR1 |= USART_CR1_TE;
+    USART2->CR1 |= USART_CR1_UE;
+}
+
+void UART_SendString1(char *str)
+{
+    while(*str)
+    {
+        while(!(USART2->ISR & USART_ISR_TXE));
+        USART2->TDR = *str++;
+    }
+}
+
+void Task1(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(uartMutex, portMAX_DELAY);
+
+        UART_SendString("Task1 is using UART\r\n");
+        vTaskDelay(pdMS_TO_TICKS(1000));   // Simulate long usage
+
+        xSemaphoreGive(uartMutex);
+
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}
+
+
+void Task2(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(uartMutex, portMAX_DELAY);
+
+        UART_SendString("Task2 is using UART\r\n");
+        vTaskDelay(pdMS_TO_TICKS(1000));   // Simulate long usage
+
+        xSemaphoreGive(uartMutex);
+
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}

@@ -1,0 +1,74 @@
+#include "FreeRTOS.h"
+#include "task.h"
+#include "stm32l476xx.h"
+#include <stdio.h>
+#include "semphr.h"
+
+
+void WelcomeTask(void *pvParameters);
+void ButtonTask(void *pvParameters);
+
+SemaphoreHandle_t uartMutex;
+
+
+int main(void)
+{
+    UART2_Init();
+    Button_Init();
+
+    uartMutex = xSemaphoreCreateMutex();
+
+    xTaskCreate(WelcomeTask,
+                "WelcomeTask",
+                256,
+                NULL,
+                1,
+                &welcomeTaskHandle);
+
+    xTaskCreate(ButtonTask,
+                "ButtonTask",
+                256,
+                NULL,
+                2,
+                &buttonTaskHandle);
+
+    vTaskStartScheduler();
+
+    while(1);
+}
+
+
+void WelcomeTask(void *pvParameters)
+{
+    while(1)
+    {
+        if(xSemaphoreTake(uartMutex, portMAX_DELAY) == pdTRUE)
+        {
+            UART_SendString("Welcome to Bitsilica\r\n");
+            xSemaphoreGive(uartMutex);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}
+
+
+void ButtonTask(void *pvParameters)
+{
+    while(1)
+    {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        if(xSemaphoreTake(uartMutex, portMAX_DELAY) == pdTRUE)
+        {
+            UART_SendString("Interrupt occurred\r\n");
+            xSemaphoreGive(uartMutex);
+        }
+
+        vTaskSuspend(welcomeTaskHandle);
+
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        vTaskResume(welcomeTaskHandle);
+    }
+}

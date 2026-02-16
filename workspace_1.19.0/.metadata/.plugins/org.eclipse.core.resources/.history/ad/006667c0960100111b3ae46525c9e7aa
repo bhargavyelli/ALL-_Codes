@@ -1,0 +1,75 @@
+#include "gpio_driver.h"
+
+uint8_t mode = 0;          // 0,1,2 patterns
+uint8_t ledState = 0;
+uint32_t lastToggle = 0;
+volatile uint32_t msTicks = 0;
+void led_task();
+void check_button();
+void SysTick_Handler(void);
+
+
+int main()
+{
+    GPIOA_CLK_EN();
+    GPIOC_CLK_EN();
+    // PA5 = LED output
+    GPIO_Init(GPIOA, 5, GPIO_MODE_OUTPUT,
+              GPIO_OTYPE_PP, GPIO_SPEED_LOW, GPIO_NO_PUPD);
+
+    // PC13 = Button input
+    GPIO_Init(GPIOC, 13, GPIO_MODE_INPUT,
+              GPIO_OTYPE_PP, GPIO_SPEED_LOW, GPIO_NO_PUPD);
+    GPIO_WritePin(GPIOA, 5, 0);
+
+//    while(1)
+//    {
+//        if(GPIO_ReadPin(GPIOC, 13) == 0)   // Button pressed
+//        {
+//        	GPIO_WritePin(GPIOA, 5, 1);
+//        }
+//        else
+//        {
+//        	GPIO_WritePin(GPIOA, 5, 0);
+//        }
+//    }
+
+    while(1)
+    {
+    	check_button();
+    	led_task();
+    }
+}
+
+void led_task()
+{
+    uint32_t interval;
+
+    if(mode == 0) interval = 500;   // slow
+    else if(mode == 1) interval = 200; // medium
+    else interval = 80;             // fast
+    if(msTicks - lastToggle >= interval)
+    {
+        lastToggle = msTicks;
+        ledState ^= 1;
+        GPIO_WritePin(GPIOA, 5, ledState);
+    }
+}
+
+
+void check_button()
+{
+    static uint8_t lastState = 1;
+    uint8_t currentState = GPIO_ReadPin(GPIOC, 13);
+
+    if(lastState == 1 && currentState == 0)
+    {
+        mode = (mode + 1) % 3;   // change pattern instantly
+    }
+    lastState = currentState;
+}
+void SysTick_Handler(void)
+{
+    msTicks++;
+}
+

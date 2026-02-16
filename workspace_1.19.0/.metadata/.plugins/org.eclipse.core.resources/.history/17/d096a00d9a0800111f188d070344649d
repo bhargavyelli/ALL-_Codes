@@ -1,0 +1,62 @@
+#include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "string.h"
+#include "usart.h"
+#include "gpio.h"
+
+extern UART_HandleTypeDef huart2;
+
+SemaphoreHandle_t uartMutex;
+
+/* Task 1 */
+void Task1(void *pvParameters)
+{
+    char msg[] = "Task 1 Running\r\n";
+
+    while(1)
+    {
+        xSemaphoreTake(uartMutex, portMAX_DELAY);
+
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+        xSemaphoreGive(uartMutex);
+
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}
+
+/* Task 2 */
+void Task2(void *pvParameters)
+{
+    char msg[] = "Task 2 Running\r\n";
+
+    while(1)
+    {
+        xSemaphoreTake(uartMutex, portMAX_DELAY);
+
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+        xSemaphoreGive(uartMutex);
+
+        vTaskDelay(pdMS_TO_TICKS(700));
+    }
+}
+
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+
+    uartMutex = xSemaphoreCreateMutex();
+
+    xTaskCreate(Task1, "Task1", 200, NULL, 2, NULL);
+    xTaskCreate(Task2, "Task2", 200, NULL, 1, NULL);
+
+    vTaskStartScheduler();
+
+    while(1);
+}

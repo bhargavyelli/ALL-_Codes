@@ -1,0 +1,39 @@
+#include "gpio_driver.h"
+
+void GPIO_Init(GPIO_RegDef_t *GPIOx, uint8_t pin, uint8_t mode,
+               uint8_t otype, uint8_t speed, uint8_t pupd)
+{
+    /* Mode */
+    GPIOx->MODER &= ~(3 << (pin * 2));
+    GPIOx->MODER |= (mode << (pin * 2));
+
+    /* Output Type */
+    GPIOx->OTYPER &= ~(1 << pin);
+    GPIOx->OTYPER |= (otype << pin);
+
+    /* Speed */
+    GPIOx->OSPEEDR &= ~(3 << (pin * 2));
+    GPIOx->OSPEEDR |= (speed << (pin * 2));
+
+    /* Pull-up/Pull-down */
+    GPIOx->PUPDR &= ~(3 << (pin * 2));
+    GPIOx->PUPDR |= (pupd << (pin * 2));
+}
+
+void GPIO_WritePin(GPIO_RegDef_t *GPIOx, uint8_t pin, uint8_t value)
+{
+    if(value)
+        GPIOx->BSRR = (1 << pin);        // Set
+    else
+        GPIOx->BSRR = (1 << (pin + 16)); // Reset
+}
+
+void GPIO_TogglePin(GPIO_RegDef_t *GPIOx, uint8_t pin)
+{
+    GPIOx->ODR ^= (1 << pin);
+}
+
+uint8_t GPIO_ReadPin(GPIO_RegDef_t *GPIOx, uint8_t pin)
+{
+    return (GPIOx->IDR & (1 << pin)) ? 1 : 0;
+}

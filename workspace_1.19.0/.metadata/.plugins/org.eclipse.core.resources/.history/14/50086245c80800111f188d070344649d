@@ -1,0 +1,119 @@
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "stm32l476xx.h"
+#include <stdio.h>
+
+void UART2_Init(void);
+void UART_SendString(char *str);
+
+void TaskA(void *pvParameters);
+void TaskB(void *pvParameters);
+void TaskC(void *pvParameters);
+
+/* Counting Semaphore */
+SemaphoreHandle_t sensorSem;
+SemaphoreHandle_t uartmutex;
+
+SemaphoreHandle_t semA;
+SemaphoreHandle_t semB;
+SemaphoreHandle_t semC;
+
+
+int main(void)
+{
+    UART2_Init();
+
+    /* Create counting semaphore
+       Max count = 3 (two sensors available)
+       Initial count = 2
+    */
+    sensorSem = xSemaphoreCreateCounting(3, 3);
+    uartmutex = xSemaphoreCreateMutex();
+
+    semA = xSemaphoreCreateBinary();
+    semB = xSemaphoreCreateBinary();
+    semC = xSemaphoreCreateBinary();
+
+    xSemaphoreGive(semA);
+
+    if(sensorSem == NULL)
+    {
+        while(1);  // Semaphore creation failed
+    }
+
+    /* Create three tasks */
+    xTaskCreate(TaskA, "TaskA", 256, NULL, 1, NULL);
+    xTaskCreate(TaskB, "TaskB", 256, NULL, 1, NULL);
+    xTaskCreate(TaskC, "TaskC", 256, NULL, 1, NULL);
+
+    vTaskStartScheduler();
+
+    while(1);
+}
+
+void TaskA(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(semA, portMAX_DELAY);
+
+        UART_SendString("Task A Running\r\n");
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        xSemaphoreGive(semB);   // Allow Task B
+    }
+}
+
+void TaskB(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(semB, portMAX_DELAY);
+
+        UART_SendString("Task B Running\r\n");
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        xSemaphoreGive(semC);   // Allow Task C
+    }
+}
+
+
+void TaskC(void *pvParameters)
+{
+    while(1)
+    {
+        xSemaphoreTake(semC, portMAX_DELAY);
+
+        UART_SendString("Task C Running\r\n");
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        xSemaphoreGive(semA);   // Back to Task A
+    }
+}
+
+void UART2_Init(void)
+{
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+    RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+
+    /* PA2 -> TX */
+    GPIOA->MODER &= ~(3 << (2*2));
+    GPIOA->MODER |=  (2 << (2*2));   // Alternate function mode
+
+    GPIOA->AFR[0] |= (7 << (4*2));   // AF7 for USART2
+
+    USART2->BRR = 4000000 / 115200;  // 4 MHz clock
+    USART2->CR1 |= USART_CR1_TE;
+    USART2->CR1 |= USART_CR1_UE;
+}
+
+
+void UART_SendString(char *str)
+{
+    while(*str)
+    {
+        while(!(USART2->ISR & USART_ISR_TXE));
+        USART2->TDR = *str++;
+    }
+}

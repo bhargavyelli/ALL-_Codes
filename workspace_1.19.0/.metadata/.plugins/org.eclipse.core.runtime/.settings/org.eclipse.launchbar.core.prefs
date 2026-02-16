@@ -1,0 +1,14 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=linux
+configDescList=org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_GPIO_Driver Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_GPIO_RTOS Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_IC,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_SPI Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_I2C_Driver Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_UART Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_GPIO Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_SPI_RTOS Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_I2C_RTOS Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_GPIO_Baremetal Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_UART_RTOS_Mutex Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_UART_RTOS_Binary Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_UART_RTOS_Counting_Semaphore Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_RTOS_QUEUE Debug
+eclipse.preferences.version=1
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_GPIO_Baremetal\ Debug/activeLaunchMode=debug
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_GPIO_Baremetal\ Debug/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_GPIO_Driver\ Debug/activeLaunchMode=debug
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_GPIO_Driver\ Debug/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_GPIO\ Debug/activeLaunchMode=debug
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_GPIO\ Debug/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_IC/activeLaunchMode=debug
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_HAL_IC/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:STM32_UART_RTOS\ Debug/activeLaunchMode=debug

@@ -1,0 +1,6 @@
+../Core/Src/main.c:26:5:main	16	static
+../Core/Src/main.c:51:6:TaskA	16	static
+../Core/Src/main.c:60:6:TaskB	16	static
+../Core/Src/main.c:69:6:TaskC	16	static
+../Core/Src/main.c:80:6:UART2_Init	4	static
+../Core/Src/main.c:97:6:UART_SendString	16	static

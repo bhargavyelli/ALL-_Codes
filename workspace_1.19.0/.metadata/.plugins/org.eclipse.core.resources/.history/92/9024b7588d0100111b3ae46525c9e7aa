@@ -1,0 +1,70 @@
+#include "gpio_driver.h"
+
+int main()
+{
+    GPIOA_CLK_EN();
+    GPIOC_CLK_EN();
+
+    // PA5 = LED output
+    GPIO_Init(GPIOA, 5, GPIO_MODE_OUTPUT,
+              GPIO_OTYPE_PP, GPIO_SPEED_LOW, GPIO_NO_PUPD);
+
+    // PC13 = Button input
+    GPIO_Init(GPIOC, 13, GPIO_MODE_INPUT,
+              GPIO_OTYPE_PP, GPIO_SPEED_LOW, GPIO_NO_PUPD);
+
+//    while(1)
+//    {
+//        if(GPIO_ReadPin(GPIOC, 13) == 0)   // Button pressed
+//        {
+//        	GPIO_WritePin(GPIOA, 5, 1);
+//        }
+//        else
+//        {
+//        	GPIO_WritePin(GPIOA, 5, 0);
+//        }
+//    }
+//
+//    while(1)
+//    {
+//    	int count = 0;
+//
+//    	if(GPIO_ReadPin(GPIOC, 13) == 0)
+//    	{
+//    		count++;
+//    	}
+//    	if(count%3 == 0)
+//    	{
+//    		//GPIO_WritePin(GPIOA, 5, 1);
+//    		GPIO_TogglePin(GPIOA,5);
+//    		for(int i=0;i<200000;i++);
+//    	}
+//    	else if(count%3 == 1)
+//    	{
+//    		GPIO_TogglePin(GPIOA,5);
+//    		for(int i=0;i<600000;i++);
+//    	}
+//    	else
+//    	{
+//    		GPIO_WritePin(GPIOA, 5, 0);
+//    	}
+//    }
+
+
+    uint8_t lastState = 1;
+    uint32_t pressCount = 0;
+
+    while(1)
+    {
+    uint8_t currentState = GPIO_ReadPin(GPIOC, 13);
+    // Detect press (1 → 0 transition)
+    if(lastState == 1 && currentState == 0)
+    {
+    	pressCount++;              // Count press
+    	GPIO_TogglePin(GPIOA,5);   // Visual indication
+    	for(int i=0;i<200000;i++); // debounce delay
+    }
+    lastState = currentState;
+    }
+
+}

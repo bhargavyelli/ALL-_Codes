@@ -1,0 +1,43 @@
+#include "stm32l476xx.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+/* Function Prototypes */
+void GPIO_Init(void);
+void LedTask(void *argument);
+
+/* ------------ MAIN ------------ */
+int main(void)
+{
+    GPIO_Init();
+
+    /* Create LED Task */
+    xTaskCreate(LedTask, "LED", 128, NULL, 1, NULL);
+
+    /* Start Scheduler */
+    vTaskStartScheduler();
+
+    while(1);  // Should never reach here
+}
+
+void GPIO_Init(void)
+{
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+
+    GPIOA->MODER &= ~(3 << (5 * 2));
+    GPIOA->MODER |=  (1 << (5 * 2));   // Output
+
+    GPIOA->OTYPER &= ~(1 << 5);
+    GPIOA->OSPEEDR &= ~(3 << (5 * 2));
+    GPIOA->PUPDR &= ~(3 << (5 * 2));
+}
+
+
+void LedTask(void *argument)
+{
+    while(1)
+    {
+        GPIOA->ODR ^= (1 << 5);  // Toggle LED
+        vTaskDelay(pdMS_TO_TICKS(500));  // 500ms delay
+    }
+}

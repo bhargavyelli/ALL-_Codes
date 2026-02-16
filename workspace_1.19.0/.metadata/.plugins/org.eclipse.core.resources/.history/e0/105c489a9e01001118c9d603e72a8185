@@ -1,0 +1,26 @@
+#include "opt3001.h"
+#include "i2c_driver.h"
+
+#define OPT3001_ADDR 0x47
+
+void OPT3001_Init(void)
+{
+    // Continuous conversion mode config = 0xC410
+    I2C1_WriteReg(OPT3001_ADDR, 0x01, 0xC4);
+    I2C1_WriteReg(OPT3001_ADDR, 0x02, 0x10);
+}
+
+float OPT3001_ReadLux(void)
+{
+    uint8_t raw[2];
+    uint16_t val, mantissa;
+    uint8_t exponent;
+
+    I2C1_ReadMulti(OPT3001_ADDR, 0x00, raw, 2);
+
+    val = (raw[0] << 8) | raw[1];
+    exponent = (val >> 12) & 0x0F;
+    mantissa = val & 0x0FFF;
+
+    return (0.01 * mantissa) * (1 << exponent);
+}

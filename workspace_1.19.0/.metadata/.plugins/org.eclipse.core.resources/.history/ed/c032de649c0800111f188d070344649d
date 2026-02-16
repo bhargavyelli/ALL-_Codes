@@ -1,0 +1,79 @@
+#include "main.h"
+#include "cmsis_os.h"
+#include "usart.h"
+#include "gpio.h"
+#include <string.h>
+
+/* Private variables ---------------------------------------------------------*/
+osThreadId_t task1Handle;
+osThreadId_t task2Handle;
+osMutexId_t uartMutexHandle;
+
+/* Task 1 */
+void Task1(void *argument)
+{
+  char *msg = "Task1 is running\r\n";
+
+  for(;;)
+  {
+    osMutexAcquire(uartMutexHandle, osWaitForever);
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    osMutexRelease(uartMutexHandle);
+
+    osDelay(1000);
+  }
+}
+
+/* Task 2 */
+void Task2(void *argument)
+{
+  char *msg = "Task2 is running\r\n";
+
+  for(;;)
+  {
+    osMutexAcquire(uartMutexHandle, osWaitForever);
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    osMutexRelease(uartMutexHandle);
+
+    osDelay(1000);
+  }
+}
+
+int main(void)
+{
+  HAL_Init();
+
+  SystemClock_Config();
+  MX_GPIO_Init();
+  MX_USART2_UART_Init();
+
+  osKernelInitialize();
+
+  /* Create Mutex */
+  const osMutexAttr_t mutex_attr = {
+    .name = "uartMutex"
+  };
+  uartMutexHandle = osMutexNew(&mutex_attr);
+
+  /* Create Task1 */
+  const osThreadAttr_t task1_attr = {
+    .name = "task1",
+    .priority = osPriorityNormal,
+    .stack_size = 128 * 4
+  };
+  task1Handle = osThreadNew(Task1, NULL, &task1_attr);
+
+  /* Create Task2 */
+  const osThreadAttr_t task2_attr = {
+    .name = "task2",
+    .priority = osPriorityNormal,
+    .stack_size = 128 * 4
+  };
+  task2Handle = osThreadNew(Task2, NULL, &task2_attr);
+
+  osKernelStart();
+
+  while (1)
+  {
+  }
+}

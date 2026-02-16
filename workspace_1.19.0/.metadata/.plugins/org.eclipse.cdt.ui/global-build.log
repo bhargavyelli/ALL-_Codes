@@ -1,0 +1,24 @@
+17:28:04 **** Incremental Build of configuration Debug for project STM32_RTOS_QUEUE ****
+make -j4 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32L476xx -c -I../Core/Inc -I../Drivers/STM32L4xx_HAL_Driver/Inc -I../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c:99:13: warning: 'SysTick_Handler' defined but not used [-Wunused-function]
+   99 | static void SysTick_Handler(void)
+      |             ^~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "STM32_RTOS_QUEUE.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/bhargav/STM32CubeIDE/workspace_1.19.0/STM32_RTOS_QUEUE/STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32_RTOS_QUEUE.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: STM32_RTOS_QUEUE.elf
+ 
+arm-none-eabi-size  STM32_RTOS_QUEUE.elf 
+arm-none-eabi-objdump -h -S STM32_RTOS_QUEUE.elf  > "STM32_RTOS_QUEUE.list"
+   text	   data	    bss	    dec	    hex	filename
+  14528	     88	  13504	  28120	   6dd8	STM32_RTOS_QUEUE.elf
+Finished building: default.size.stdout
+ 
+Finished building: STM32_RTOS_QUEUE.list
+ 
+17:28:08 **** Incremental Build of configuration Debug for project STM32_RTOS_QUEUE ****
+make -j4 all 
+arm-none-eabi-size  STM32_RTOS_QUEUE.elf 
+   text	   data	    bss	    dec	    hex	filename
+  14528	     88	  13504	  28120	   6dd8	STM32_RTOS_QUEUE.elf
+Finished building: default.size.stdout
+ 

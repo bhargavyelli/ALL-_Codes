@@ -1,0 +1,10 @@
+11:04:45 **** Incremental Build of configuration Debug for project STM32_UART_RTOS ****
+make -j4 all 
+arm-none-eabi-size  STM32_UART_RTOS.elf 
+   text	   data	    bss	    dec	    hex	filename
+  13300	     12	   7980	  21292	   532c	STM32_UART_RTOS.elf
+Finished building: default.size.stdout
+ 
+
+11:04:45 Build Finished. 0 errors, 0 warnings. (took 130ms)
+

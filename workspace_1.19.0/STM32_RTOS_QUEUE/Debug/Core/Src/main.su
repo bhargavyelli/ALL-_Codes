@@ -1,0 +1,6 @@
+../Core/Src/main.c:20:5:main	16	static
+../Core/Src/main.c:45:6:SenderTask	24	static
+../Core/Src/main.c:60:6:ReceiverTask	72	static
+../Core/Src/main.c:75:6:UART2_Init	4	static
+../Core/Src/main.c:91:6:UART_SendString	16	static
+../Core/Src/main.c:99:13:SysTick_Handler	8	static

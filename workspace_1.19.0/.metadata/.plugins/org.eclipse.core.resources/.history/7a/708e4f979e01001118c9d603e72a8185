@@ -1,0 +1,7 @@
+#ifndef OPT3001_H
+#define OPT3001_H
+
+float OPT3001_ReadLux(void);
+void OPT3001_Init(void);
+
+#endif
