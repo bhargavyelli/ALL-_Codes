@@ -1,0 +1,17 @@
+Matplot lib is used to visualize the data through graphs,piecharts etc..
+
+pip install matplotlib
+
+import matplotlib.pyplot as pt 
+            or
+from matplotlib import pyplot as pt 
+These 2 lines will import matplotlib as pt
+
+
+plt.show() - It is used to show the visulization of data
+
+plt.bar() - It is used to change the data to bar graph
+
+plt.xlabel()
+plt.ylabel()
+plt.title()  - These are used to label the x and y axis along with graph title

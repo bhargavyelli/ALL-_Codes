@@ -1,0 +1,25 @@
+import cv2 as cv - it is useful to import opencv
+It is useful to extract images and videos into pixels.
+
+imread() - it is useful to read images.
+VideoCapture() - It is useful to extract frames from videos
+
+imshow() - it is useful to display the extracted images, input for this function is window name and output of imread or videocapture.
+
+waitKey() - it is useful t display our window to sepecific time or until we press any key
+
+cv.rectangle() - It is used to draw rectangle on our picture
+cv.circle()
+cv.line()
+
+cv.cvtColor(img,cv.color_BGR2GRAY) - It is used to convert colorful image to gray colour image
+
+cv.Gaussianblur() - It is used to Blur the source image
+
+cv.Canny() - It is used to detect edges
+
+cv.dilate() - It is used to dialte the image
+cv.erode() - It will give Canny image from dilated image
+
+cv.resize() - It is used to resize the image inputs are source image, pixels(width and height) and interpolation for converting to less dimension than original
+source_img[50:200, 200:400] - It will crop the image
